@@ -26,3 +26,6 @@ func ConnectDatabase() {
 	log.Println("Connected to database")
 
 }
+
+
+//migrate -database "postgres://postgres:postgres@localhost:5432/habit_tracker_db?sslmode=disable" -path database/migrations up

@@ -22,6 +22,7 @@ func InitRoutes(app *gin.Engine) {
 
 	habitRoute.GET("/all", habit_controller.GetAllHabits)
 	habitRoute.POST("/create", habit_controller.Create)
+	habitRoute.POST("/update/:id", habit_controller.Update)
 
 	authRoute.POST("/register", auth_controller.Register)
 	authRoute.POST("/login", auth_controller.Login)
