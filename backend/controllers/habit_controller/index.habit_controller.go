@@ -149,5 +149,22 @@ func Update(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "Habit updated successfully",
 	})
+}
+
+func Delete(ctx *gin.Context) {
+	userIdStr := ctx.MustGet("user_id").(string)
+	habitId := ctx.Param("id")
+
+	userId, _ := uuid.Parse(userIdStr)
+
+	habit := new(models.Habit)
+
+	if err := database.DB.Table("habits").Where("id = ?", habitId).Where("user_id = ?", userId).First(&habit).Error; err != nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{
+			"message": "Habit not found",
+		})
+	}
+
+	
 
 }
