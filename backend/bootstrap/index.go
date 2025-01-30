@@ -1,6 +1,7 @@
 package bootstrap
 
 import (
+	"gin-gonic-gorm/configs/cors_config"
 	"gin-gonic-gorm/database"
 	"gin-gonic-gorm/routes"
 
@@ -12,6 +13,8 @@ func BootstrapApp() {
 	app := gin.Default()
 
 	database.ConnectDatabase()
+
+	app.Use(cors_config.CorsConfigContrib())
 	routes.InitRoutes(app)
 	app.Run(":8000")
 }
