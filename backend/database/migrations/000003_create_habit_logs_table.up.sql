@@ -3,6 +3,7 @@ CREATE TABLE habit_logs (
     habit_id UUID REFERENCES habits(id) ON DELETE CASCADE,
     log_date DATE NOT NULL, -- Tanggal pencatatan
     progress INT NOT NULL DEFAULT 0, -- Jumlah yang telah dicapai oleh user
+    notes TEXT,
     status VARCHAR(100) NOT NULL, -- Status pencatatan
     created_at TIMESTAMP DEFAULT now()
 );

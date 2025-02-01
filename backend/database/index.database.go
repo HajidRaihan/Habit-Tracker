@@ -27,5 +27,6 @@ func ConnectDatabase() {
 
 }
 
-
 //migrate -database "postgres://postgres:postgres@localhost:5432/habit_tracker_db?sslmode=disable" -path database/migrations up
+
+// migrate create -ext sql -dir database/migrations -seq create_users_table

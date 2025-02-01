@@ -2,6 +2,7 @@ package habit_controller
 
 import (
 	"encoding/json"
+	"errors"
 	"gin-gonic-gorm/database"
 	"gin-gonic-gorm/models"
 	"gin-gonic-gorm/requests"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 func GetAllHabits(ctx *gin.Context) {
@@ -152,19 +154,53 @@ func Update(ctx *gin.Context) {
 }
 
 func Delete(ctx *gin.Context) {
+	// Ambil user_id dari context (setelah autentikasi)
 	userIdStr := ctx.MustGet("user_id").(string)
 	habitId := ctx.Param("id")
 
-	userId, _ := uuid.Parse(userIdStr)
+	// Parse user_id menjadi UUID
+	userId, err := uuid.Parse(userIdStr)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid user ID",
+		})
+		return
+	}
 
+	// Periksa apakah habit ada dan milik user tersebut
 	habit := new(models.Habit)
+	if err := database.DB.Table("habits").Where("id = ?", habitId).Where("user_id = ?", userId).First(habit).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{
+				"message": "Habit not found",
+			})
+		} else {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"message": "Failed to fetch habit",
+			})
+		}
+		return
+	}
 
-	if err := database.DB.Table("habits").Where("id = ?", habitId).Where("user_id = ?", userId).First(&habit).Error; err != nil {
+	// Hapus habit dari database
+	result := database.DB.Table("habits").Where("id = ?", habitId).Where("user_id = ?", userId).Delete(&models.Habit{})
+	if result.Error != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Failed to delete habit",
+		})
+		return
+	}
+
+	// Periksa apakah habit benar-benar dihapus
+	if result.RowsAffected == 0 {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{
 			"message": "Habit not found",
 		})
+		return
 	}
 
-	
-
+	// Kirim response
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "Habit deleted successfully",
+	})
 }
